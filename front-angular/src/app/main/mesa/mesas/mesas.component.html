@@ -1,0 +1,73 @@
+<div id="products" class="page-layout carded fullwidth inner-scroll">
+
+    <!-- TOP BACKGROUND -->
+    <div></div>
+    <!-- / TOP BACKGROUND -->
+
+    <!-- CENTER -->
+    <div class="center">
+
+
+        <!-- HEADER -->
+        <div class="header" fxLayout="column" fxLayoutAlign="center center" fxLayout.gt-sm="row"
+      fxLayoutAlign.gt-sm="space-between center">
+
+      <div fxLayout="column" fxLayoutAlign="center start">
+        <div fxLayout="row" fxLayoutAlign="start center">
+            <span class="secondary-text"><h1>Mesa</h1></span>
+          
+          </div>
+        <div class=" h3 mt-16">
+          <div class="search-wrapper mx-32 mx-md-0">
+            <div fxFlex fxLayout="row">
+              <mat-icon>search</mat-icon>
+              <input matInput (keyup)="applyFilter($event.target.value)"  placeholder="Ingrese valor a buscar" #input>
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    
+      <!-- / SEARCH -->
+
+      <!-- ADD BUTTON -->
+      <button mat-raised-button [routerLink]="'/mesa'"
+        class="add-product-button fuse-white mt-24 mt-md-0">
+        <mat-icon>add</mat-icon>
+      </button>
+      <!-- / ADD BUTTON -->
+
+    </div>
+        <!-- / HEADER -->
+
+        <!-- CONTENT CARD -->
+        <div class="content-card" fusePerfectScrollbar>
+            <mat-table class="products-table" #table [dataSource]="dataSource" matSort [@animateStagger]="{value:'50'}" fusePerfectScrollbar>
+                <ng-container matColumnDef="identificacion">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Identificacion </mat-header-cell>
+                    <mat-cell *matCellDef="let mesa"> {{mesa.identificacion}} </mat-cell>
+                </ng-container>
+
+                <ng-container matColumnDef="nunmaxpersonas">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Maximo de Personas </mat-header-cell>
+                    <mat-cell *matCellDef="let mesa"> {{mesa.nunmaxpersonas}} </mat-cell>
+                </ng-container>
+               
+                <ng-container matColumnDef="ubicacion">
+                    <mat-header-cell *matHeaderCellDef mat-sort-header> Ubicacion </mat-header-cell>
+                    <mat-cell *matCellDef="let mesa"> {{mesa.ubicacion}} </mat-cell>
+                </ng-container>
+           
+                <mat-header-row *matHeaderRowDef="displayedColumns; sticky:true"></mat-header-row>
+                <mat-row *matRowDef="let mesa; columns: displayedColumns;" class="mesa"   [routerLink]="'/mesa/'+mesa.idmesa ">
+                </mat-row>
+            </mat-table>
+
+            <mat-paginator #paginator [pageIndex]="0" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]">
+            </mat-paginator>
+        </div>
+        <!-- / CONTENT CARD -->
+    </div>
+    <!-- / CENTER -->
+</div>

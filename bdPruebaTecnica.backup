@@ -1,0 +1,869 @@
+
+Se creo un usuario de base de datos con en siguente nombre y contraseña
+usuario: nextsoftware;
+contraseña: nextsoftware
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.3.0
+-- Dumped by pg_dump version 9.5.5
+
+-- Started on 2021-02-23 04:38:50
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 1 (class 3079 OID 11750)
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- TOC entry 2038 (class 0 OID 0)
+-- Dependencies: 1
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 176 (class 1259 OID 483354)
+-- Name: camarero; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE camarero (
+    idcamarero integer NOT NULL,
+    nombre character varying(60) NOT NULL,
+    apellido1 character varying(30) NOT NULL,
+    apellido2 character varying(30)
+);
+
+
+ALTER TABLE camarero OWNER TO postgres;
+
+--
+-- TOC entry 171 (class 1259 OID 483329)
+-- Name: cliente; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE cliente (
+    id_cliente integer NOT NULL,
+    nombre character varying(60) NOT NULL,
+    apellido1 character varying(30) NOT NULL,
+    apellido2 character varying(30),
+    observaciones character varying(50)
+);
+
+
+ALTER TABLE cliente OWNER TO postgres;
+
+--
+-- TOC entry 175 (class 1259 OID 483349)
+-- Name: cocinero; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE cocinero (
+    idcocinero integer NOT NULL,
+    nombre character varying(60) NOT NULL,
+    apellido1 character varying(60) NOT NULL,
+    apellido2 character varying(30)
+);
+
+
+ALTER TABLE cocinero OWNER TO postgres;
+
+--
+-- TOC entry 174 (class 1259 OID 483344)
+-- Name: detallefactura; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE detallefactura (
+    iddetallefactura integer NOT NULL,
+    idcocinero integer NOT NULL,
+    importe integer NOT NULL,
+    idfactura integer NOT NULL,
+    plato character varying(50)
+);
+
+
+ALTER TABLE detallefactura OWNER TO postgres;
+
+--
+-- TOC entry 173 (class 1259 OID 483339)
+-- Name: factura; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE factura (
+    idfactura integer NOT NULL,
+    idcliente integer NOT NULL,
+    idcamarero integer NOT NULL,
+    idmesa integer NOT NULL,
+    fechafactura date NOT NULL
+);
+
+
+ALTER TABLE factura OWNER TO postgres;
+
+--
+-- TOC entry 185 (class 1259 OID 483408)
+-- Name: factura_vw; Type: TABLE; Schema: public; Owner: nextsoftware
+--
+
+CREATE TABLE factura_vw (
+    idfactura integer NOT NULL,
+    fechafactura timestamp without time zone,
+    idcamarero integer,
+    idcliente integer,
+    idmesa integer,
+    nombrecamarero character varying(255),
+    nombrecliente character varying(255)
+);
+
+
+ALTER TABLE factura_vw OWNER TO nextsoftware;
+
+--
+-- TOC entry 184 (class 1259 OID 483404)
+-- Name: facturavw; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW facturavw AS
+ SELECT f.idfactura, 
+    f.idcliente, 
+    cl.nombre AS nombrecliente, 
+    f.idcamarero, 
+    c.nombre AS nombrecamarero, 
+    f.fechafactura, 
+    f.idmesa
+   FROM ((factura f
+   JOIN camarero c ON ((f.idcamarero = c.idcamarero)))
+   JOIN cliente cl ON ((f.idcliente = cl.id_cliente)));
+
+
+ALTER TABLE facturavw OWNER TO postgres;
+
+--
+-- TOC entry 172 (class 1259 OID 483334)
+-- Name: mesa; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE mesa (
+    idmesa integer NOT NULL,
+    ubicacion character varying(20),
+    nunmaxpersonas integer NOT NULL,
+    identificacion integer NOT NULL
+);
+
+
+ALTER TABLE mesa OWNER TO postgres;
+
+--
+-- TOC entry 189 (class 1259 OID 483443)
+-- Name: plato; Type: TABLE; Schema: public; Owner: nextsoftware
+--
+
+CREATE TABLE plato (
+    idplato integer NOT NULL,
+    descripcion character varying(255),
+    nombre character varying(255)
+);
+
+
+ALTER TABLE plato OWNER TO nextsoftware;
+
+--
+-- TOC entry 188 (class 1259 OID 483435)
+-- Name: reporte_camarero_vw; Type: TABLE; Schema: public; Owner: nextsoftware
+--
+
+CREATE TABLE reporte_camarero_vw (
+    idcamarero integer NOT NULL,
+    apellido1 character varying(255),
+    mes character varying(255),
+    nombre character varying(255),
+    sum integer
+);
+
+
+ALTER TABLE reporte_camarero_vw OWNER TO nextsoftware;
+
+--
+-- TOC entry 186 (class 1259 OID 483420)
+-- Name: reportecamarero; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW reportecamarero AS
+ SELECT c.nombre, 
+    c.apellido1, 
+    to_char(date_trunc('month'::text, (f.fechafactura)::timestamp with time zone), 'Mon'::text) AS mes, 
+    sum(df.importe) AS sum
+   FROM ((camarero c
+   JOIN factura f ON ((c.idcamarero = f.idcamarero)))
+   JOIN detallefactura df ON ((f.idfactura = df.idfactura)))
+  GROUP BY to_char(date_trunc('month'::text, (f.fechafactura)::timestamp with time zone), 'Mon'::text), c.nombre, c.apellido1;
+
+
+ALTER TABLE reportecamarero OWNER TO postgres;
+
+--
+-- TOC entry 187 (class 1259 OID 483430)
+-- Name: reportecamarerovw; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW reportecamarerovw AS
+ SELECT c.idcamarero, 
+    c.nombre, 
+    c.apellido1, 
+    to_char(date_trunc('month'::text, (f.fechafactura)::timestamp with time zone), 'Mon'::text) AS mes, 
+    sum(df.importe) AS sum
+   FROM ((camarero c
+   JOIN factura f ON ((c.idcamarero = f.idcamarero)))
+   JOIN detallefactura df ON ((f.idfactura = df.idfactura)))
+  GROUP BY to_char(date_trunc('month'::text, (f.fechafactura)::timestamp with time zone), 'Mon'::text), c.nombre, c.apellido1, c.idcamarero;
+
+
+ALTER TABLE reportecamarerovw OWNER TO postgres;
+
+--
+-- TOC entry 177 (class 1259 OID 483389)
+-- Name: sec_camarero; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_camarero
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 9999999999
+    CACHE 1;
+
+
+ALTER TABLE sec_camarero OWNER TO postgres;
+
+--
+-- TOC entry 178 (class 1259 OID 483391)
+-- Name: sec_cliente; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_cliente
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 999999999
+    CACHE 1;
+
+
+ALTER TABLE sec_cliente OWNER TO postgres;
+
+--
+-- TOC entry 179 (class 1259 OID 483393)
+-- Name: sec_cocinero; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_cocinero
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 99999999
+    CACHE 1;
+
+
+ALTER TABLE sec_cocinero OWNER TO postgres;
+
+--
+-- TOC entry 180 (class 1259 OID 483395)
+-- Name: sec_detallefactura; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_detallefactura
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 999999999
+    CACHE 1;
+
+
+ALTER TABLE sec_detallefactura OWNER TO postgres;
+
+--
+-- TOC entry 181 (class 1259 OID 483397)
+-- Name: sec_factura; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_factura
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 999999999
+    CACHE 1;
+
+
+ALTER TABLE sec_factura OWNER TO postgres;
+
+--
+-- TOC entry 182 (class 1259 OID 483399)
+-- Name: sec_mesa; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_mesa
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 9999999999
+    CACHE 1;
+
+
+ALTER TABLE sec_mesa OWNER TO postgres;
+
+--
+-- TOC entry 183 (class 1259 OID 483401)
+-- Name: sec_plato; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE sec_plato
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    MAXVALUE 99999999
+    CACHE 1;
+
+
+ALTER TABLE sec_plato OWNER TO postgres;
+
+--
+-- TOC entry 2020 (class 0 OID 483354)
+-- Dependencies: 176
+-- Data for Name: camarero; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY camarero (idcamarero, nombre, apellido1, apellido2) FROM stdin;
+6	lucas	muñoz	laso
+\.
+
+
+--
+-- TOC entry 2015 (class 0 OID 483329)
+-- Dependencies: 171
+-- Data for Name: cliente; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY cliente (id_cliente, nombre, apellido1, apellido2, observaciones) FROM stdin;
+35	luis	chavez	sanchez	alergico al pepino
+36	javier	sandoval	sterling	me gusta la grasa
+\.
+
+
+--
+-- TOC entry 2019 (class 0 OID 483349)
+-- Dependencies: 175
+-- Data for Name: cocinero; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY cocinero (idcocinero, nombre, apellido1, apellido2) FROM stdin;
+4	hamilton	pascar	cambindo
+\.
+
+
+--
+-- TOC entry 2018 (class 0 OID 483344)
+-- Dependencies: 174
+-- Data for Name: detallefactura; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY detallefactura (iddetallefactura, idcocinero, importe, idfactura, plato) FROM stdin;
+10	4	20000	6	camarones
+\.
+
+
+--
+-- TOC entry 2017 (class 0 OID 483339)
+-- Dependencies: 173
+-- Data for Name: factura; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY factura (idfactura, idcliente, idcamarero, idmesa, fechafactura) FROM stdin;
+6	35	6	2	2021-02-23
+\.
+
+
+--
+-- TOC entry 2028 (class 0 OID 483408)
+-- Dependencies: 185
+-- Data for Name: factura_vw; Type: TABLE DATA; Schema: public; Owner: nextsoftware
+--
+
+COPY factura_vw (idfactura, fechafactura, idcamarero, idcliente, idmesa, nombrecamarero, nombrecliente) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2016 (class 0 OID 483334)
+-- Dependencies: 172
+-- Data for Name: mesa; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY mesa (idmesa, ubicacion, nunmaxpersonas, identificacion) FROM stdin;
+2	centro	3	22
+\.
+
+
+--
+-- TOC entry 2030 (class 0 OID 483443)
+-- Dependencies: 189
+-- Data for Name: plato; Type: TABLE DATA; Schema: public; Owner: nextsoftware
+--
+
+COPY plato (idplato, descripcion, nombre) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2029 (class 0 OID 483435)
+-- Dependencies: 188
+-- Data for Name: reporte_camarero_vw; Type: TABLE DATA; Schema: public; Owner: nextsoftware
+--
+
+COPY reporte_camarero_vw (idcamarero, apellido1, mes, nombre, sum) FROM stdin;
+\.
+
+
+--
+-- TOC entry 2056 (class 0 OID 0)
+-- Dependencies: 177
+-- Name: sec_camarero; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_camarero', 6, true);
+
+
+--
+-- TOC entry 2057 (class 0 OID 0)
+-- Dependencies: 178
+-- Name: sec_cliente; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_cliente', 36, true);
+
+
+--
+-- TOC entry 2058 (class 0 OID 0)
+-- Dependencies: 179
+-- Name: sec_cocinero; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_cocinero', 4, true);
+
+
+--
+-- TOC entry 2059 (class 0 OID 0)
+-- Dependencies: 180
+-- Name: sec_detallefactura; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_detallefactura', 10, true);
+
+
+--
+-- TOC entry 2060 (class 0 OID 0)
+-- Dependencies: 181
+-- Name: sec_factura; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_factura', 6, true);
+
+
+--
+-- TOC entry 2061 (class 0 OID 0)
+-- Dependencies: 182
+-- Name: sec_mesa; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_mesa', 2, true);
+
+
+--
+-- TOC entry 2062 (class 0 OID 0)
+-- Dependencies: 183
+-- Name: sec_plato; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('sec_plato', 1, false);
+
+
+--
+-- TOC entry 1895 (class 2606 OID 483415)
+-- Name: factura_vw_pkey; Type: CONSTRAINT; Schema: public; Owner: nextsoftware
+--
+
+ALTER TABLE ONLY factura_vw
+    ADD CONSTRAINT factura_vw_pkey PRIMARY KEY (idfactura);
+
+
+--
+-- TOC entry 1893 (class 2606 OID 483358)
+-- Name: pk_camarero; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY camarero
+    ADD CONSTRAINT pk_camarero PRIMARY KEY (idcamarero);
+
+
+--
+-- TOC entry 1883 (class 2606 OID 483333)
+-- Name: pk_cliente; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY cliente
+    ADD CONSTRAINT pk_cliente PRIMARY KEY (id_cliente);
+
+
+--
+-- TOC entry 1891 (class 2606 OID 483353)
+-- Name: pk_cocinero; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY cocinero
+    ADD CONSTRAINT pk_cocinero PRIMARY KEY (idcocinero);
+
+
+--
+-- TOC entry 1889 (class 2606 OID 483348)
+-- Name: pk_detallefactura; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY detallefactura
+    ADD CONSTRAINT pk_detallefactura PRIMARY KEY (iddetallefactura);
+
+
+--
+-- TOC entry 1887 (class 2606 OID 483343)
+-- Name: pk_factura; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY factura
+    ADD CONSTRAINT pk_factura PRIMARY KEY (idfactura);
+
+
+--
+-- TOC entry 1885 (class 2606 OID 483338)
+-- Name: pk_mesa; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY mesa
+    ADD CONSTRAINT pk_mesa PRIMARY KEY (idmesa);
+
+
+--
+-- TOC entry 1899 (class 2606 OID 483450)
+-- Name: plato_pkey; Type: CONSTRAINT; Schema: public; Owner: nextsoftware
+--
+
+ALTER TABLE ONLY plato
+    ADD CONSTRAINT plato_pkey PRIMARY KEY (idplato);
+
+
+--
+-- TOC entry 1897 (class 2606 OID 483442)
+-- Name: reporte_camarero_vw_pkey; Type: CONSTRAINT; Schema: public; Owner: nextsoftware
+--
+
+ALTER TABLE ONLY reporte_camarero_vw
+    ADD CONSTRAINT reporte_camarero_vw_pkey PRIMARY KEY (idcamarero);
+
+
+--
+-- TOC entry 1901 (class 2606 OID 483364)
+-- Name: fk_camarero; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY factura
+    ADD CONSTRAINT fk_camarero FOREIGN KEY (idcamarero) REFERENCES camarero(idcamarero);
+
+
+--
+-- TOC entry 1900 (class 2606 OID 483359)
+-- Name: fk_cliente; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY factura
+    ADD CONSTRAINT fk_cliente FOREIGN KEY (idcliente) REFERENCES cliente(id_cliente);
+
+
+--
+-- TOC entry 1904 (class 2606 OID 483379)
+-- Name: fk_cocinero; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY detallefactura
+    ADD CONSTRAINT fk_cocinero FOREIGN KEY (idcocinero) REFERENCES cocinero(idcocinero);
+
+
+--
+-- TOC entry 1903 (class 2606 OID 483374)
+-- Name: fk_factura; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY detallefactura
+    ADD CONSTRAINT fk_factura FOREIGN KEY (idfactura) REFERENCES factura(idfactura);
+
+
+--
+-- TOC entry 1902 (class 2606 OID 483369)
+-- Name: fk_mesa; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY factura
+    ADD CONSTRAINT fk_mesa FOREIGN KEY (idmesa) REFERENCES mesa(idmesa);
+
+
+--
+-- TOC entry 2037 (class 0 OID 0)
+-- Dependencies: 6
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+--
+-- TOC entry 2039 (class 0 OID 0)
+-- Dependencies: 176
+-- Name: camarero; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE camarero FROM PUBLIC;
+REVOKE ALL ON TABLE camarero FROM postgres;
+GRANT ALL ON TABLE camarero TO postgres;
+GRANT ALL ON TABLE camarero TO PUBLIC;
+GRANT ALL ON TABLE camarero TO nextsoftware;
+
+
+--
+-- TOC entry 2040 (class 0 OID 0)
+-- Dependencies: 171
+-- Name: cliente; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE cliente FROM PUBLIC;
+REVOKE ALL ON TABLE cliente FROM postgres;
+GRANT ALL ON TABLE cliente TO postgres;
+GRANT ALL ON TABLE cliente TO PUBLIC;
+GRANT ALL ON TABLE cliente TO nextsoftware;
+
+
+--
+-- TOC entry 2041 (class 0 OID 0)
+-- Dependencies: 175
+-- Name: cocinero; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE cocinero FROM PUBLIC;
+REVOKE ALL ON TABLE cocinero FROM postgres;
+GRANT ALL ON TABLE cocinero TO postgres;
+GRANT ALL ON TABLE cocinero TO PUBLIC;
+GRANT ALL ON TABLE cocinero TO nextsoftware;
+
+
+--
+-- TOC entry 2042 (class 0 OID 0)
+-- Dependencies: 174
+-- Name: detallefactura; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE detallefactura FROM PUBLIC;
+REVOKE ALL ON TABLE detallefactura FROM postgres;
+GRANT ALL ON TABLE detallefactura TO postgres;
+GRANT ALL ON TABLE detallefactura TO PUBLIC;
+GRANT ALL ON TABLE detallefactura TO nextsoftware;
+
+
+--
+-- TOC entry 2043 (class 0 OID 0)
+-- Dependencies: 173
+-- Name: factura; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE factura FROM PUBLIC;
+REVOKE ALL ON TABLE factura FROM postgres;
+GRANT ALL ON TABLE factura TO postgres;
+GRANT ALL ON TABLE factura TO PUBLIC;
+GRANT ALL ON TABLE factura TO nextsoftware;
+
+
+--
+-- TOC entry 2044 (class 0 OID 0)
+-- Dependencies: 185
+-- Name: factura_vw; Type: ACL; Schema: public; Owner: nextsoftware
+--
+
+REVOKE ALL ON TABLE factura_vw FROM PUBLIC;
+REVOKE ALL ON TABLE factura_vw FROM nextsoftware;
+GRANT ALL ON TABLE factura_vw TO nextsoftware;
+GRANT ALL ON TABLE factura_vw TO PUBLIC;
+
+
+--
+-- TOC entry 2045 (class 0 OID 0)
+-- Dependencies: 184
+-- Name: facturavw; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE facturavw FROM PUBLIC;
+REVOKE ALL ON TABLE facturavw FROM postgres;
+GRANT ALL ON TABLE facturavw TO postgres;
+GRANT ALL ON TABLE facturavw TO nextsoftware;
+
+
+--
+-- TOC entry 2046 (class 0 OID 0)
+-- Dependencies: 172
+-- Name: mesa; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE mesa FROM PUBLIC;
+REVOKE ALL ON TABLE mesa FROM postgres;
+GRANT ALL ON TABLE mesa TO postgres;
+GRANT ALL ON TABLE mesa TO PUBLIC;
+GRANT ALL ON TABLE mesa TO nextsoftware;
+
+
+--
+-- TOC entry 2047 (class 0 OID 0)
+-- Dependencies: 186
+-- Name: reportecamarero; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE reportecamarero FROM PUBLIC;
+REVOKE ALL ON TABLE reportecamarero FROM postgres;
+GRANT ALL ON TABLE reportecamarero TO postgres;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,UPDATE ON TABLE reportecamarero TO PUBLIC;
+
+
+--
+-- TOC entry 2048 (class 0 OID 0)
+-- Dependencies: 187
+-- Name: reportecamarerovw; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON TABLE reportecamarerovw FROM PUBLIC;
+REVOKE ALL ON TABLE reportecamarerovw FROM postgres;
+GRANT ALL ON TABLE reportecamarerovw TO postgres;
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,UPDATE ON TABLE reportecamarerovw TO PUBLIC;
+
+
+--
+-- TOC entry 2049 (class 0 OID 0)
+-- Dependencies: 177
+-- Name: sec_camarero; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_camarero FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_camarero FROM postgres;
+GRANT ALL ON SEQUENCE sec_camarero TO postgres;
+GRANT ALL ON SEQUENCE sec_camarero TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_camarero TO nextsoftware;
+
+
+--
+-- TOC entry 2050 (class 0 OID 0)
+-- Dependencies: 178
+-- Name: sec_cliente; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_cliente FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_cliente FROM postgres;
+GRANT ALL ON SEQUENCE sec_cliente TO postgres;
+GRANT ALL ON SEQUENCE sec_cliente TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_cliente TO nextsoftware;
+
+
+--
+-- TOC entry 2051 (class 0 OID 0)
+-- Dependencies: 179
+-- Name: sec_cocinero; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_cocinero FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_cocinero FROM postgres;
+GRANT ALL ON SEQUENCE sec_cocinero TO postgres;
+GRANT ALL ON SEQUENCE sec_cocinero TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_cocinero TO nextsoftware;
+
+
+--
+-- TOC entry 2052 (class 0 OID 0)
+-- Dependencies: 180
+-- Name: sec_detallefactura; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_detallefactura FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_detallefactura FROM postgres;
+GRANT ALL ON SEQUENCE sec_detallefactura TO postgres;
+GRANT ALL ON SEQUENCE sec_detallefactura TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_detallefactura TO nextsoftware;
+
+
+--
+-- TOC entry 2053 (class 0 OID 0)
+-- Dependencies: 181
+-- Name: sec_factura; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_factura FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_factura FROM postgres;
+GRANT ALL ON SEQUENCE sec_factura TO postgres;
+GRANT ALL ON SEQUENCE sec_factura TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_factura TO nextsoftware;
+
+
+--
+-- TOC entry 2054 (class 0 OID 0)
+-- Dependencies: 182
+-- Name: sec_mesa; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_mesa FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_mesa FROM postgres;
+GRANT ALL ON SEQUENCE sec_mesa TO postgres;
+GRANT ALL ON SEQUENCE sec_mesa TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_mesa TO nextsoftware;
+
+
+--
+-- TOC entry 2055 (class 0 OID 0)
+-- Dependencies: 183
+-- Name: sec_plato; Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON SEQUENCE sec_plato FROM PUBLIC;
+REVOKE ALL ON SEQUENCE sec_plato FROM postgres;
+GRANT ALL ON SEQUENCE sec_plato TO postgres;
+GRANT ALL ON SEQUENCE sec_plato TO PUBLIC;
+GRANT ALL ON SEQUENCE sec_plato TO nextsoftware;
+
+
+-- Completed on 2021-02-23 04:38:50
+
+--
+-- PostgreSQL database dump complete
+--
+

@@ -1,0 +1,157 @@
+<div id="process" class="page-layout carded fullwidth ">
+
+    <!-- TOP BACKGROUND -->
+    <div>
+    </div>
+    <!-- / TOP BACKGROUND -->
+
+    <!-- CENTER -->
+    <div class="center">
+
+        <!-- HEADER -->
+        <div class="header" fxLayout="row" fxLayoutAlign="space-between center">
+
+
+            <div fxLayout="column" fxLayoutAlign="center start">
+                <div fxLayout="row" fxLayoutAlign="start center">
+                    <span class="secondary-text">
+                        <h1>Factura</h1>
+                    </span>
+                </div>
+            </div>
+
+
+            <div fxLayout="row" fxLayoutAlign="start center">
+                <button *ngIf="!paramsIdFactura" mat-raised-button class="save-product-button" class="mr-0 mr-sm-16"
+                    (click)="saveFactura()">
+                    <!-- <span >GUARDAR</span> -->
+                    <mat-icon>save</mat-icon>
+                </button>
+
+                <button *ngIf="!paramsIdFactura" mat-raised-button class="save-product-button" class="mr-0 mr-sm-16"
+                    (click)="limpiarCliente()">
+                    <mat-icon>360</mat-icon>
+                </button>
+            </div>
+        </div>
+        <!-- / HEADER -->
+
+        <!-- CONTENT CARD ADD-->
+        <div class="content-card">
+            <div class="content">
+                <br>
+                <mat-tab-group>
+                    <mat-tab label="Factura">
+                        <form [formGroup]="FacturaForm" class="product w-100-p" fxLayout="column" fxFlex>
+
+                            <div class="p-24" fusePerfectScrollbar>
+                                <div fxLayout="row" fxLayoutAlign="start center">
+                                    <button *ngIf="paramsIdFactura" mat-raised-button class="save-product-button"
+                                        class="mr-0 mr-sm-16" (click)="saveFactura()">
+                                        <mat-icon>save</mat-icon>
+                                    </button>
+                                    <button *ngIf="paramsIdFactura " mat-raised-button class="save-product-button"
+                                        class="mr-0 mr-sm-16" (click)="limpiarCliente()">
+                                        <mat-icon>cancel</mat-icon>
+                                    </button>
+                                </div>
+                                <br>
+                                <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                    <mat-label>Clientes</mat-label>
+                                    <mat-select name="idcliente" formControlName="idcliente" required>
+                                        <mat-option><strong>Seleccione un cliente</strong></mat-option>
+                                        <mat-option *ngFor="let item of listaCliente" [value]="item.id_cliente">
+                                            {{item.nombre}}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                    <mat-label>Camarero</mat-label>
+                                    <mat-select name="idcamarero" formControlName="idcamarero" required>
+                                        <mat-option><strong>Seleccione un camarero</strong></mat-option>
+                                        <mat-option *ngFor="let item of listaCamarero" [value]="item.idcamarero">
+                                            {{item.nombre}}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+
+                                <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                    <mat-label>Mesa</mat-label>
+                                    <mat-select name="idmesa" formControlName="idmesa" required>
+                                        <mat-option><strong>Seleccione una mesa</strong></mat-option>
+                                        <mat-option *ngFor="let item of listaMesa" [value]="item.idmesa">
+                                            {{item.identificacion}}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+
+
+                            </div>
+                        </form>
+                    </mat-tab>
+                    <mat-tab label="DetalleFactura" *ngIf="paramsIdFactura">
+                        <div>
+                            <form [formGroup]="detalleFacturaForm" class="product w-100-p" fxLayout="column" fxFlex>
+
+                                <div class="p-24" fusePerfectScrollbar>
+                                    <div fxLayout="row" fxLayoutAlign="start center">
+                                        <button *ngIf="paramsIdFactura" mat-raised-button class="save-product-button"
+                                            class="mr-0 mr-sm-16" (click)="saveDetalleFactura()">
+                                            <mat-icon>save</mat-icon>
+                                        </button>
+                                        <button *ngIf="paramsIdFactura " mat-raised-button class="save-product-button"
+                                            class="mr-0 mr-sm-16" (click)="limpiarCliente()">
+                                            <mat-icon>cancel</mat-icon>
+                                        </button>
+                                    </div>
+                                    <br>
+
+                                    <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                        <mat-label>Cocinero</mat-label>
+                                        <mat-select name="idcocinero" formControlName="idcocinero" required>
+                                            <mat-option><strong>Seleccione una cocinero</strong></mat-option>
+                                            <mat-option *ngFor="let item of listaCocinero" [value]="item.idcocinero">
+                                                {{item.nombre}}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                        <mat-label>Nombre del plato</mat-label>
+                                        <textarea rows="1" matInput placeholder="Nombre del plato" name="plato"
+                                            formControlName="plato" required></textarea>
+
+                                    </mat-form-field>
+
+                                    <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                        <mat-label>Precio</mat-label>
+                                        <textarea rows="1" matInput placeholder="Precio" name="importe"
+                                            formControlName="importe" required></textarea>
+
+                                    </mat-form-field>
+
+
+                                </div>
+                            </form>
+                        </div>
+                    </mat-tab> -
+
+                </mat-tab-group>
+
+
+
+            </div>
+
+        </div>
+        <!-- / CONTENT CARD -->
+
+
+        <br>
+
+
+    </div>
+    <!-- / CENTER -->
+
+</div>

@@ -1,0 +1,101 @@
+<div id="process" class="page-layout carded fullwidth ">
+
+    <!-- TOP BACKGROUND -->
+    <div>
+    </div>
+    <!-- / TOP BACKGROUND -->
+
+    <!-- CENTER -->
+    <div class="center">
+
+        <!-- HEADER -->
+        <div class="header" fxLayout="row" fxLayoutAlign="space-between center">
+
+
+            <div fxLayout="column" fxLayoutAlign="center start">
+                <div fxLayout="row" fxLayoutAlign="start center">
+                  <span class="secondary-text"><h1>Mesa</h1></span>
+                </div>
+            </div>     
+           
+
+            <div fxLayout="row" fxLayoutAlign="start center">
+                <button *ngIf="!paramsIdMesa" mat-raised-button class="save-product-button" class="mr-0 mr-sm-16"
+                    (click)="saveMesa()">
+                    <!-- <span >GUARDAR</span> -->
+                    <mat-icon>save</mat-icon>
+                </button>
+
+                <button *ngIf="!paramsIdMesa" mat-raised-button class="save-product-button" class="mr-0 mr-sm-16"
+                    (click)="limpiarCliente()">
+                    <mat-icon>360</mat-icon>
+                </button>
+            </div>
+        </div>
+        <!-- / HEADER -->
+
+        <!-- CONTENT CARD ADD-->
+        <div class="content-card">
+            <div class="content">
+                <br>
+                <form [formGroup]="mesaForm" class="product w-100-p" fxLayout="column" fxFlex>
+                    <mat-tab-group>
+                        <mat-tab label="Mesa">
+                            <div class="p-24" fusePerfectScrollbar>
+                                <div fxLayout="row" fxLayoutAlign="start center">
+                                    <button *ngIf="paramsIdMesa" mat-raised-button class="save-product-button" class="mr-0 mr-sm-16"
+                                        (click)="saveMesa()">
+                                        <!-- <span >GUARDAR</span> -->
+                                        <mat-icon>save</mat-icon>
+                                    </button>
+                                    <button *ngIf="paramsIdMesa " mat-raised-button class="save-product-button" class="mr-0 mr-sm-16"
+                                        (click)="limpiarCliente()">
+                                        <!-- <span >GUARDAR</span> -->
+                                        <mat-icon>cancel</mat-icon>
+                                    </button>
+                                </div>
+                                <br>
+                                <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                    <mat-label>Ubicacion </mat-label>
+                                    <textarea maxlength="350" matInput placeholder="Ubicacion" name="ubicacion"
+                                        formControlName="ubicacion" required></textarea>
+
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                    <mat-label>Numero de Personas en la Mesa</mat-label>
+                                    <textarea rows="1" matInput placeholder="numero de personas en la mesa" name="nunmaxpersonas"
+                                        formControlName="nunmaxpersonas" required></textarea>
+
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" floatLabel="always" class="w-100-p">
+                                    <mat-label>Identificacion Mesa</mat-label>
+                                    <textarea rows="1" matInput placeholder="Identificacion" name="identificacion"
+                                        formControlName="identificacion" required></textarea>
+
+                                </mat-form-field>
+
+                              
+                            </div>
+                        </mat-tab>
+                        
+
+                    </mat-tab-group>
+
+
+                </form>
+
+            </div>
+
+        </div>
+        <!-- / CONTENT CARD -->
+
+
+        <br>
+
+
+    </div>
+    <!-- / CENTER -->
+
+</div>
